@@ -6,15 +6,33 @@ window.geometry("400x300")
 window.mainloop()
 class Employee:
     def __init__(self, name, age, position, salary):
-        self.name = name
-        self.age = age
-        self.position = position
-        self.salary = salary
+        self.__name = name
+        self.__age = age
+        self.__position = position
+        self.__salary = salary
+    
+    def set_name(self,name):
+        self.__name=name
+    def set_name(self,age):
+        self.__age=age
+    def set_name(self,position):
+        self.__position=position
+    def set_name(self,salary):
+        self.__salary=salary
 
+    def get_name(self):
+        return self.__name
+    def get_name(self):
+        return self.__age
+    def get_name(self):
+        return self.__position
+    def get_name(self):
+        return self.__salary       
+         
     def edit_employee(self, **kwargs):
         for key, value in kwargs.items():
             if hasattr(self, key) and value is not None:
-                setattr(self, key, value)
+                self.__{key}=value
 
 
 class EmployeeManager:
