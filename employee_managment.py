@@ -1,40 +1,61 @@
 import json
-import tkinter as tk
-window=tk.Tk()
-window.title("Employee manager")
-window.geometry("400x300")
-window.mainloop()
+import os
+
+# Employee class
 class Employee:
     def __init__(self, name, age, position, salary):
-        self.__name = name
-        self.__age = age
-        self.__position = position
-        self.__salary = salary
-    
-    def set_name(self,name):
-        self.__name=name
-    def set_name(self,age):
-        self.__age=age
-    def set_name(self,position):
-        self.__position=position
-    def set_name(self,salary):
-        self.__salary=salary
+        self._name = name
+        self._age = age
+        self._position = position
+        self._salary = salary
+        
+    def __str__(self):
+        return f"{self._name} - {self._position}, Age: {self._age}, Salary: {self._salary}"
+    # Setters
+    def set_name(self, name):
+        self._name = name
 
+    def set_age(self, age):
+        if isinstance(age, int) and 18 <= age <= 60:
+            self._age = age
+        else:
+            print("Age must be an integer between 18 and 60.")
+
+    def set_position(self, position):
+        self._position = position
+
+    def set_salary(self, salary):
+        if isinstance(salary, (int, float)) and salary >= 0:
+            self._salary = salary
+        else:
+            print("Salary can't be negative.")
+
+    # Getters
     def get_name(self):
-        return self.__name
-    def get_name(self):
-        return self.__age
-    def get_name(self):
-        return self.__position
-    def get_name(self):
-        return self.__salary       
-         
+        return self._name
+
+    def get_age(self):
+        return self._age
+
+    def get_position(self):
+        return self._position
+
+    def get_salary(self):
+        return self._salary
+
     def edit_employee(self, **kwargs):
         for key, value in kwargs.items():
-            if hasattr(self, key) and value is not None:
-                self.__{key}=value
+            if value is not None:
+                if key == "name":
+                    self.set_name(value)
+                elif key == "age":
+                    self.set_age(value)
+                elif key == "position":
+                    self.set_position(value)
+                elif key == "salary":
+                    self.set_salary(value)
 
-
+# EmployeeManager class
 class EmployeeManager:
     def __init__(self):
         self.employees = {}
@@ -44,30 +65,49 @@ class EmployeeManager:
         try:
             name = input("Enter name: ")
             age = int(input("Enter age: "))
-            salary = float(input("Enter salary: "))
             position = input("Enter position: ")
-            return Employee(name, age, position, salary)
+            salary = float(input("Enter salary: "))
+            return name, age, position, salary
         except ValueError:
             print("Invalid input! Please enter valid numbers for age and salary.")
             return None
 
     def add_employee(self):
         print("Add New Employee")
-        emp = self.input_employee_data()
-        if emp:
-            self.employees[self.emp_id] = emp
-            print(f"Employee '{emp.name}' added successfully with ID {self.emp_id}")
-            self.emp_id += 1
-            self.save_to_file()  # moved inside to ensure only on success
+        data = self.input_employee_data()
+        if data is None:
+            return
+        name, age, position, salary = data
+        emp = Employee(name, age, position, salary)
+        self.employees[self.emp_id] = emp
+        print(f"Employee '{emp.get_name()}' added successfully with ID {self.emp_id}")
+        self.emp_id += 1
+        self.save_to_file()
+
+    def edit_employee_data(self):
+        try:
+            emp_id = int(input("Enter the ID of the employee to edit: "))
+            emp = self.employees.get(emp_id)
+            if not emp:
+                print("Employee not found.")
+                return
+            data = self.input_employee_data()
+            if data is None:
+                return
+            name, age, position, salary = data
+            emp.edit_employee(name=name, age=age, position=position, salary=salary)
+            print("Employee data updated successfully.")
+            self.save_to_file()
+        except ValueError:
+            print("Invalid input. ID must be an integer.")
 
     def remove_employee(self):
         try:
             emp_id = int(input("Enter the ID to remove: "))
             emp = self.employees.pop(emp_id, None)
             if emp:
-                print(f"Employee '{emp.name}' removed successfully.")
+                print(f"Employee '{emp.get_name()}' removed successfully.")
                 self.save_to_file()
-                # If no employees left, reset emp_id to 1
                 if not self.employees:
                     self.emp_id = 1
             else:
@@ -84,13 +124,13 @@ class EmployeeManager:
             else:
                 print("Employee not found.")
         except ValueError:
-            print("Invalid input! Please enter a valid integer")
+            print("Invalid input! Please enter a valid integer.")
 
     def search_by_name(self):
         emp_name = input("Enter employee Name to search: ").strip().lower()
         found = False
         for emp_id, emp in self.employees.items():
-            if emp_name in emp.name.lower():
+            if emp_name in emp.get_name().lower():
                 self.print_employee(emp_id, emp)
                 found = True
         if not found:
@@ -105,12 +145,10 @@ class EmployeeManager:
             print(f"{key}. {value}")
         try:
             search_type = int(input("Enter your choice: "))
-            if search_type == 1:
-                self.search_by_id()
-            elif search_type == 2:
-                self.search_by_name()
+            if search_type in search_menu:
+                search_menu[search_type][1]()
             else:
-                print("Invalid choice")
+                print("Invalid choice.")
         except ValueError:
             print("Invalid input, must be an integer.")
 
@@ -122,45 +160,23 @@ class EmployeeManager:
             self.print_employee(emp_id, emp)
 
     def print_employee(self, emp_id, emp):
-        print(f"ID: {emp_id} | Name: {emp.name} | Age: {emp.age} | Position: {emp.position} | Salary: {emp.salary}")
+        print(f"ID: {emp_id} | {emp}")
 
-    def edit_employee(self):
-        try:
-            emp_id = int(input("Enter the ID of the employee to edit: "))
-            emp = self.employees.get(emp_id)
-            if not emp:
-                print("Employee not found.")
-                return
-            new_name = input("New name: ") or None
-            try:
-                new_age_input = input("New age: ")
-                new_age = int(new_age_input) if new_age_input else None
-                new_salary_input = input("New salary: ")
-                new_salary = float(new_salary_input) if new_salary_input else None
-            except ValueError:
-                print("Invalid number entered.")
-                return
-            new_position = input("New position: ") or None
-            emp.edit_employee(name=new_name, age=new_age, position=new_position, salary=new_salary)
-            print("Employee data updated successfully.")
-            self.save_to_file()
-        except ValueError:
-            print("Invalid input. ID must be an integer.")
+    def save_to_file(self, filename="employee.json"):
 
-    def save_to_file(self, filename="employee manager/employee.json"):
         with open(filename, "w") as file:
             data = {}
             for emp_id, emp in self.employees.items():
                 data[str(emp_id)] = {
-                    "name": emp.name,
-                    "age": emp.age,
-                    "salary": emp.salary,
-                    "position": emp.position
+                    "name": emp.get_name(),
+                    "age": emp.get_age(),
+                    "position": emp.get_position(),
+                    "salary": emp.get_salary()
                 }
             json.dump(data, file, indent=4)
-        print("Data saved successfully.")
+            print("Data saved successfully.")
 
-    def load_from_file(self, filename="employee manager/employee.json"):
+    def load_from_file(self, filename="employee.json"):
         try:
             with open(filename, "r") as file:
                 data = json.load(file)
@@ -183,7 +199,7 @@ class EmployeeManager:
     def user_menu(self):
         menu_options = {
             1: ("Add a new employee", self.add_employee),
-            2: ("Edit employee data", self.edit_employee),
+            2: ("Edit employee data", self.edit_employee_data),
             3: ("Remove an employee", self.remove_employee),
             4: ("Find an employee", self.search_employee_menu),
             5: ("View all employees", self.view_all_employees),
@@ -208,6 +224,7 @@ class EmployeeManager:
             except ValueError:
                 print("Invalid data type.")
 
+# Main program
 if __name__ == "__main__":
     manager = EmployeeManager()
     manager.load_from_file()
