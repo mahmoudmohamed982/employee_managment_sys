@@ -1,8 +1,34 @@
 {
     "1": {
-        "name": "omar",
-        "age": 99,
-        "position": "asd",
-        "salary": 633.0
+        "name": "medo",
+        "age": 30,
+        "position": "manager",
+        "salary": 6000.0
+    },
+    "2": {
+        "name": "3",
+        "age": 26,
+        "position": "Developer",
+        "salary": 3000.0
+    },
+    "3": {
+        "name": "nedo",
+        "age": 30,
+        "position": "manager",
+        "salary": 2000.0,
+        "department": "rer"
+    },
+    "4": {
+        "name": "wer",
+        "age": 70,
+        "position": "Developer",
+        "salary": 6000.0,
+        "programming_lang": "c+++"
+    },
+    "5": {
+        "name": "kkk",
+        "age": 50,
+        "position": "ghj",
+        "salary": -50.0
     }
 }
