@@ -1,16 +1,16 @@
 import json
-
+from abc import ABC,abstractmethod
 
 # Employee class
-class Employee:
-    def __init__(self, name, age, position, salary):
+class Employee(ABC):
+    def __init__(self, name, age, position):
         self.set_name(name)
         self.set_age(age)
         self.set_position(position)
-        self.set_salary(salary)
+
 
     def __str__(self):
-        return f"{self._name} - {self._position}, Age: {self._age}, Salary: {self._salary}"
+        return f"{self._name} - {self._position}, Age: {self._age}"
     
     # Setters
     def set_name(self, name):
@@ -25,11 +25,9 @@ class Employee:
     def set_position(self, position):
         self._position = position
 
-    def set_salary(self, salary):
-        if isinstance(salary, (int, float)) and salary >= 0:
-            self._salary = salary
-        else:
-            raise ValueError(" invalid Salary value.")
+    @abstractmethod
+    def clac_salary(self):
+        pass
 
     # Getters
     def get_name(self):
@@ -41,8 +39,6 @@ class Employee:
     def get_position(self):
         return self._position
 
-    def get_salary(self):
-        return self._salary
 
     def edit_employee(self, **kwargs):
         for key, value in kwargs.items():
@@ -63,12 +59,13 @@ class Employee:
         print(f"{self._name} is working as {self._position} in general department.")
 # manager class
 class Manager(Employee):
-    def __init__(self, name, age, salary, department):
-        super().__init__(name, age, "manager", salary)
+    def __init__(self, name, age,department,base_salary,bonus):
+        super().__init__(name, age, "manager")
         self.set_department(department) 
-
+        self._base_salary=base_salary
+        self._bonus=bonus
     def __str__(self):
-        return super().__str__() + f" Department: {self._department}"
+        return super().__str__() + f" Department: {self._department} + Salary: {self.clac_salary()}"
 
     def set_department(self, department):
         self._department = department
@@ -78,15 +75,17 @@ class Manager(Employee):
 
     def work(self):
         print(f"{self._name} is managing the {self._department} department.")
-
+    def clac_salary(self):
+        return  (self._base_salary)+(self._bonus)
 # developer class
 class Developer(Employee):
-    def __init__(self, name, age, salary, programming_lang):
-        super().__init__(name, age, "Developer", salary)
-        self.set_programming_lang(programming_lang) 
-
+    def __init__(self, name, age, programming_lang,hourly_rate,hours_worked):
+        super().__init__(name, age, "Developer")
+        self.set_programming_lang(programming_lang)
+        self._hourly_rate = hourly_rate
+        self._hours_worked = hours_worked
     def __str__(self):
-        return super().__str__() + f" Programming Language: {self._programming_lang}"
+        return super().__str__() + f" Programming Language: {self._programming_lang}  Salary: {self.clac_salary()}"
 
     def set_programming_lang(self, programming_lang):
         self._programming_lang = programming_lang
@@ -97,7 +96,9 @@ class Developer(Employee):
     def work(self):
         print(f"{self._name} is writing code in {self._programming_lang}")
 
-
+    def clac_salary(self):
+        return (self._hourly_rate)*(self._hours_worked)
+    
 # EmployeeManager class
 class EmployeeManager:
     def __init__(self):
@@ -109,18 +110,15 @@ class EmployeeManager:
         try:
             input_name = input("Enter name: ")
             input_age = input("Enter age: ")
-            input_salary = input("Enter salary: ")
             if allow_empty:
                 name = input_name if input_name else None
                 age = int(input_age) if input_age else None
-                salary = float(input_salary) if input_salary else None
             else:
-                if not input_name or not input_age or not input_salary:
+                if not input_name or not input_age :
                     raise ValueError("All fields are required.")
                 name = input_name
                 age = int(input_age)
-                salary = float(input_salary)
-            return name, age, salary
+            return name, age
         except ValueError:
             print("Invalid input! Please enter valid numbers for age and salary.")
             return None
@@ -128,7 +126,7 @@ class EmployeeManager:
     # add employee method
     def add_employee(self):
         print("Add New Employee")
-        print("1. General Employee\n2. Manager\n3. Developer")
+        print("1. Manager\n2. Developer")
         try:
             emp_type = int(input("Choose employee type:"))
         except:
@@ -140,15 +138,24 @@ class EmployeeManager:
             return
         name, age, salary = data
         try:
-            if emp_type == 2:
+            if emp_type == 1:
                 department = input("Enter department: ")
-                emp = Manager(name, age, salary, department)
-            elif emp_type == 3:
+                try:
+                    base_salary = float(input("Enter base salary: "))
+                    bonus = float(input("Enter bonus: "))
+                except ValueError:
+                    raise ("invalid salary please enter  positive number")
+                emp = Manager(name, age, salary, department,base_salary,bonus)
+            elif emp_type == 2:
                 prog_lang = input("Enter programming language: ")
-                emp = Developer(name, age, salary, prog_lang)
+                try:
+                    hourly_rate = float(input("Enter  hourly rate: "))
+                    work_hours = float(input("Enter work hours: "))
+                except ValueError:
+                    raise ("invalid salary please enter  positive number")                
+                emp = Developer(name, age, salary, prog_lang,hourly_rate,work_hours)
             else:
-                position = input("Enter position: ")
-                emp = Employee(name, age, position, salary)
+                print("invalid choice")
             self.employees[self.emp_id] = emp
             print(f"Employee '{emp.get_name()}' added successfully with ID {self.emp_id}")
             self.emp_id += 1
@@ -173,13 +180,15 @@ class EmployeeManager:
         if data is None:
             return
 
-        name, age, salary = data
+        name, age = data
 
         try:
-            emp.edit_employee(name=name, age=age, salary=salary)
+            emp.edit_employee(name=name, age=age)
             if isinstance(emp, Manager):
                 department = input("Enter department: ") or None
-                emp.edit_employee(department=department)
+                base_salary=float(input("Enter base salary: ")) or None
+                bonus=float(input("Enter bonus: ")) or None
+                emp.edit_employee(department=department,base_salary=base_salary,bonus=bonus)
             elif isinstance(emp, Developer):
                 programming_lang = input("Enter programming language: ") or None
                 emp.edit_employee(programming_lang=programming_lang)
