@@ -11,7 +11,7 @@ class Employee:
 
     def __str__(self):
         return f"{self._name} - {self._position}, Age: {self._age}, Salary: {self._salary}"
-
+    
     # Setters
     def set_name(self, name):
         self._name = name
@@ -59,7 +59,8 @@ class Employee:
                     self.set_department(value)
                 elif key == "programming_lang":
                     self.set_programming_lang(value)                    
-
+    def work(self):
+        print(f"{self._name} is working as {self._position} in general department.")
 # manager class
 class Manager(Employee):
     def __init__(self, name, age, salary, department):
@@ -75,6 +76,8 @@ class Manager(Employee):
     def get_department(self):
         return self._department
 
+    def work(self):
+        print(f"{self._name} is managing the {self._department} department.")
 
 # developer class
 class Developer(Employee):
@@ -90,6 +93,9 @@ class Developer(Employee):
 
     def get_programming_lang(self):
         return self._programming_lang
+    
+    def work(self):
+        print(f"{self._name} is writing code in {self._programming_lang}")
 
 
 # EmployeeManager class
@@ -133,45 +139,55 @@ class EmployeeManager:
         if data is None:
             return
         name, age, salary = data
-
-        if emp_type == 2:
-            department = input("Enter department: ")
-            emp = Manager(name, age, salary, department)
-        elif emp_type == 3:
-            prog_lang = input("Enter programming language: ")
-            emp = Developer(name, age, salary, prog_lang)
-        else:
-            position = input("Enter position: ")
-            emp = Employee(name, age, position, salary)
-        self.employees[self.emp_id] = emp
-        print(f"Employee '{emp.get_name()}' added successfully with ID {self.emp_id}")
-        self.emp_id += 1
-        self.save_to_file()
+        try:
+            if emp_type == 2:
+                department = input("Enter department: ")
+                emp = Manager(name, age, salary, department)
+            elif emp_type == 3:
+                prog_lang = input("Enter programming language: ")
+                emp = Developer(name, age, salary, prog_lang)
+            else:
+                position = input("Enter position: ")
+                emp = Employee(name, age, position, salary)
+            self.employees[self.emp_id] = emp
+            print(f"Employee '{emp.get_name()}' added successfully with ID {self.emp_id}")
+            self.emp_id += 1
+            self.save_to_file()
+        except ValueError as e:
+            print(e)
 
     # edit employee method
     def edit_employee_data(self):
         try:
             emp_id = int(input("Enter the ID of the employee to edit: "))
-            emp = self.employees.get(emp_id)
-            if not emp:
-                print("Employee not found.")
-                return
-            data = self.input_employee_data(allow_empty=True)
-            if data is None:
-                return
-            name, age, salary = data
+        except ValueError:
+            print("Invalid input. ID must be an integer.")
+            return
+
+        emp = self.employees.get(emp_id)
+        if not emp:
+            print("Employee not found.")
+            return
+
+        data = self.input_employee_data(allow_empty=True)
+        if data is None:
+            return
+
+        name, age, salary = data
+
+        try:
             emp.edit_employee(name=name, age=age, salary=salary)
             if isinstance(emp, Manager):
                 department = input("Enter department: ") or None
                 emp.edit_employee(department=department)
             elif isinstance(emp, Developer):
-                programming_lang = input("Enter programming language: ")
-                emp.edit_employee(programming_lang=programming_lang) or None
+                programming_lang = input("Enter programming language: ") or None
+                emp.edit_employee(programming_lang=programming_lang)
             self.save_to_file()
             print("Employee data updated successfully.")
+        except ValueError as e:
+            print(e)
 
-        except ValueError:
-            print("Invalid input. ID must be an integer.")
 
     # remove employee method
     def remove_employee(self):
@@ -240,7 +256,13 @@ class EmployeeManager:
     # show employee data
     def print_employee(self, emp_id, emp):
         print(f"ID: {emp_id} | {emp}")
-
+    def show_work(self):
+        emp_id=int(input("Enter ID of Employee"))
+        emp=self.employees.get(emp_id)
+        if not emp:
+            print("employee is not found")
+            return
+        return emp.work()
     # save data to json file
     def save_to_file(self, filename="employee.json"):
         with open(filename, "w") as file:
@@ -266,7 +288,7 @@ class EmployeeManager:
             with open(filename, "r") as file:
                 data = json.load(file)
                 for emp_id, emp_info in data.items():
-                    # تأكد من تحويل العمر والراتب إلى الأنواع الصحيحة
+
                     try:
                         age = int(emp_info["age"])
                         salary = float(emp_info["salary"])
@@ -315,7 +337,8 @@ class EmployeeManager:
             3: ("Remove an employee", self.remove_employee),
             4: ("Find an employee", self.search_employee_menu),
             5: ("View all employees", self.view_all_employees),
-            6: ("Exit", None),
+            6: ("Show Employee Work", self.show_work),            
+            7: ("Exit", None)
         }
 
         while True:
@@ -325,14 +348,14 @@ class EmployeeManager:
 
             try:
                 user_input = int(input("Enter your choice: "))
-                if user_input == 6:
+                if user_input == 7:
                     print("Exiting program...")
                     self.save_to_file()
                     break
                 elif user_input in menu_options:
                     menu_options[user_input][1]()
                 else:
-                    print("Enter a choice between 1 - 6.")
+                    print("Enter a choice between 1 - 7.")
             except ValueError:
                 print("Invalid data type.")
 
