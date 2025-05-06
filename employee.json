@@ -1,0 +1,26 @@
+{
+    "1": {
+        "name": "zxc",
+        "age": 33,
+        "role": "manager",
+        "department": "cv",
+        "base_salary": 306.0,
+        "bonus": 30.0
+    },
+    "2": {
+        "name": "rty",
+        "age": 30,
+        "role": "Developer",
+        "programming_lang": "c+",
+        "hourly_rate": 4.0,
+        "hours_worked": 4.0
+    },
+    "3": {
+        "name": "asd",
+        "age": 30,
+        "role": "Developer",
+        "programming_lang": "qwe",
+        "hourly_rate": 30.0,
+        "hours_worked": 30.0
+    }
+}
