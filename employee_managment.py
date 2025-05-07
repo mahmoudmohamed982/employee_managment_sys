@@ -4,6 +4,8 @@ from abc import ABC, abstractmethod
 # Employee class
 class Employee(ABC):
     def __init__(self, name, age, role):
+        if name is None:
+            raise("name is required")
         self._name = name
         self.set_age(age)
         self._role = role
@@ -32,7 +34,7 @@ class Employee(ABC):
     def get_role(self):
         return self._role
 
-    def edit_employee(self, **kwargs):
+    def update_emp(self, **kwargs):
         for key, value in kwargs.items():
             if value is not None:
                 if key == "name":
@@ -62,7 +64,7 @@ class Manager(Employee):
     def __str__(self):
         return (
             super().__str__()
-            + f" Department: {self._department} + Salary: {self.calc_salary()}"
+            + f" Department: {self._department} Salary: {self.calc_salary()}"
         )
 
     def set_base_salary(self, base_salary):
@@ -92,7 +94,7 @@ class Manager(Employee):
 
 class Developer(Employee):
     def __init__(self, name, age, programming_lang, hourly_rate, hours_worked):
-        super().__init__(name, age, "Developer")
+        super().__init__(name, age, "developer")
         self._programming_lang = programming_lang
         self._hourly_rate = hourly_rate
         self._hours_worked = hours_worked
@@ -100,7 +102,7 @@ class Developer(Employee):
     def __str__(self):
         return (
             super().__str__()
-            + f" Programming Language: {self._programming_lang}  Salary: {self.calc_salary()}"
+            + f" Programming Language: {self._programming_lang} Salary: {self.calc_salary()}"
         )
 
     def set_programming_lang(self, programming_lang):
@@ -131,31 +133,56 @@ class Developer(Employee):
 class EmployeeManager:
     def __init__(self):
         self.employees = {}
-        self.emp_id = 1
+        self.emp_id = 1001
 
     def input_employee_data(self, emp_type, allow_empty=False):
         try:
             input_name = input("Enter name: ")
             input_age = input("Enter age: ")
 
-            name = input_name if allow_empty and not input_name else input_name
-            age = int(input_age) if allow_empty and not input_age else int(input_age)
+            name = input_name if input_name else None
+            age = int(input_age) if input_age else None
+            if name is None and not allow_empty:
+                raise ValueError("Name is required.")
 
             if emp_type == 1:
-                department = input("Enter department: ")
-                base_salary = float(input("Enter base salary: "))
-                bonus = float(input("Enter bonus: "))
-                return name, age, department, base_salary, bonus, None, None, None
+                manager_data = self.input_manager_data()
+                if manager_data is None and not allow_empty:
+                    raise ValueError("Manager data is required.")
+                return name, age, manager_data[0], manager_data[1], manager_data[2], None, None, None
             elif emp_type == 2:
-                prog_lang = input("Enter programming language: ")
-                hourly_rate = float(input("Enter hourly rate: "))
-                work_hours = float(input("Enter work hours: "))
-                return name, age, None, None, None, prog_lang, hourly_rate, work_hours
+                dev_data = self.input_developer_data()
+                if dev_data is None and not allow_empty:
+                    raise ValueError("Developer data is required.")
+                return name, age, None, None, None, dev_data[0], dev_data[1], dev_data[2]
 
-        except ValueError:
-            print("Invalid input! Please enter valid numbers for age and salary.")
+        except ValueError as e:
+            print(e)
             return None
 
+    def input_manager_data(self):
+        department = input("Enter department: ") or None
+        base_salary_input = input("Enter base salary: ")
+        bonus_input = input("Enter bonus: ")
+        try:
+            base_salary = float(base_salary_input) if base_salary_input else None
+            bonus = float(bonus_input) if bonus_input else None
+            return department, base_salary, bonus
+        except ValueError:
+            print("Invalid base salary or bonus input.")
+            return None
+
+    def input_developer_data(self):
+        prog_lang = input("Enter programming language: ") or None
+        hourly_rate_input = input("Enter hourly rate: ")
+        work_hours_input = input("Enter work hours: ")
+        try:
+            hourly_rate = float(hourly_rate_input) if hourly_rate_input else None
+            work_hours = float(work_hours_input) if work_hours_input else None
+            return prog_lang, hourly_rate, work_hours
+        except ValueError:
+            print("Invalid hourly rate or work hours input.")
+            return None
     def add_employee(self):
         print("Add New Employee")
         print("1. Manager\n2. Developer")
@@ -206,12 +233,12 @@ class EmployeeManager:
         name, age, department, base_salary, bonus, prog_lang, hourly_rate, work_hours = data
         try:
             if isinstance(emp, Manager):
-                emp.edit_employee(
+                emp.update_emp(
                     name=name, age=age, department=department,
                     base_salary=base_salary, bonus=bonus
                 )
             elif isinstance(emp, Developer):
-                emp.edit_employee(
+                emp.update_emp(
                     name=name, age=age, programming_lang=prog_lang,
                     hourly_rate=hourly_rate, hours_worked=work_hours
                 )
@@ -228,7 +255,7 @@ class EmployeeManager:
                 print(f"Employee '{emp.get_name()}' removed successfully.")
                 self.save_to_file()
                 if not self.employees:
-                    self.emp_id = 1
+                    self.emp_id = 1001
             else:
                 print("Employee not found.")
         except ValueError:
@@ -324,7 +351,7 @@ class EmployeeManager:
                     age = int(emp_info["age"])
                     if emp_info["role"] == "manager":
                         emp = Manager(name, age, emp_info["department"], emp_info["base_salary"], emp_info["bonus"])
-                    elif emp_info["role"] == "Developer":
+                    elif emp_info["role"] == "developer":
                         emp = Developer(name, age, emp_info["programming_lang"], emp_info["hourly_rate"], emp_info["hours_worked"])
                     else:
                         continue

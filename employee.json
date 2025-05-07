@@ -1,26 +1,18 @@
 {
-    "1": {
-        "name": "zxc",
-        "age": 33,
+    "1001": {
+        "name": "aser",
+        "age": 30,
         "role": "manager",
-        "department": "cv",
-        "base_salary": 306.0,
-        "bonus": 30.0
+        "department": "sales",
+        "base_salary": 30.0,
+        "bonus": 600.0
     },
-    "2": {
-        "name": "rty",
-        "age": 30,
-        "role": "Developer",
-        "programming_lang": "c+",
-        "hourly_rate": 4.0,
-        "hours_worked": 4.0
-    },
-    "3": {
-        "name": "asd",
-        "age": 30,
-        "role": "Developer",
-        "programming_lang": "qwe",
-        "hourly_rate": 30.0,
-        "hours_worked": 30.0
+    "1002": {
+        "name": "nader",
+        "age": 23,
+        "role": "developer",
+        "programming_lang": "js",
+        "hourly_rate": 50.0,
+        "hours_worked": 40.0
     }
 }
