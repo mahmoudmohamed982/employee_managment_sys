@@ -5,11 +5,10 @@ from abc import ABC, abstractmethod
 class Employee(ABC):
     def __init__(self, name, age, role):
         if name is None:
-            raise("name is required")
+            raise ValueError("name is required")
         self._name = name
-        self.set_age(age)
         self._role = role
-
+        self.set_age(age)
     def __str__(self):
         return f"{self._name} - {self._role}, Age: {self._age}"
 
@@ -17,7 +16,9 @@ class Employee(ABC):
         self._name = name
 
     def set_age(self, age):
-        if isinstance(age, int) and 18 <= age <= 60:
+        if age is None :
+            self._age = None
+        elif isinstance(age, int) and 18 <= age <= 60:
             self._age = age
         else:
             raise ValueError("Age must be an integer between 18 and 60.")
@@ -36,14 +37,7 @@ class Employee(ABC):
 
     def update_emp(self, **kwargs):
         for key, value in kwargs.items():
-            if value is not None:
-                if key == "name":
-                    self.set_name(value)
-                elif key == "age":
-                    self.set_age(value)
-                elif key == "role":
-                    self.set_role(value)
-                elif hasattr(self, f"set_{key}"):
+            if value is not None and hasattr(self, f"set_{key}"):
                     getattr(self, f"set_{key}")(value)
 
     def work(self):
@@ -57,9 +51,11 @@ class Employee(ABC):
 class Manager(Employee):
     def __init__(self, name, age, department, base_salary, bonus):
         super().__init__(name, age, "manager")
-        self._department = department
-        self._base_salary = base_salary
-        self._bonus = bonus
+        if department is None or  base_salary is None  or bonus is None:
+            raise ValueError("department and salary is required")
+        self.set_department(department)
+        self.set_base_salary(base_salary)
+        self.set_bonus(bonus)
 
     def __str__(self):
         return (
@@ -95,6 +91,8 @@ class Manager(Employee):
 class Developer(Employee):
     def __init__(self, name, age, programming_lang, hourly_rate, hours_worked):
         super().__init__(name, age, "developer")
+        if programming_lang is None or  hourly_rate is None   or   hours_worked is None  :
+            raise ValueError("programming language and salary details is required")
         self._programming_lang = programming_lang
         self._hourly_rate = hourly_rate
         self._hours_worked = hours_worked
